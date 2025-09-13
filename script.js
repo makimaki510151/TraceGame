@@ -16,15 +16,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let audioContext;
     let gainNode;
 
-    // ページロード時に最高スコアと音量を設定
     highScoreElement.textContent = highScore;
     const savedVolume = localStorage.getItem('gameVolume');
     if (savedVolume !== null) {
         volumeSlider.value = savedVolume;
     }
 
-    // ゲーム開始ボタンの初回クリック時にAudioContextを初期化
-    // 自動再生ポリシーのため、ユーザー操作後に初期化を行う
     startButton.addEventListener('click', () => {
         if (!audioContext) {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -35,7 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
         startGame();
     });
     
-    // 音量スライダーの変更を監視
     volumeSlider.addEventListener('input', () => {
         if (gainNode) {
             gainNode.gain.value = volumeSlider.value;
@@ -99,14 +95,24 @@ document.addEventListener('DOMContentLoaded', () => {
         gameArea.appendChild(ball);
     }
 
+    // マウスイベントとタッチイベントの両方に対応
     let lastMouseX = 0;
     let lastMouseY = 0;
 
-    gameArea.addEventListener('mousemove', (e) => {
+    function handleInput(e) {
         if (!isGameRunning) return;
 
-        const currentMouseX = e.clientX - gameArea.getBoundingClientRect().left;
-        const currentMouseY = e.clientY - gameArea.getBoundingClientRect().top;
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+
+        const currentMouseX = clientX - gameArea.getBoundingClientRect().left;
+        const currentMouseY = clientY - gameArea.getBoundingClientRect().top;
 
         const balls = document.querySelectorAll('.ball');
         balls.forEach(ball => {
@@ -117,7 +123,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         lastMouseX = currentMouseX;
         lastMouseY = currentMouseY;
-    });
+        
+        // タッチ操作の場合、ブラウザのデフォルト動作を抑制
+        e.preventDefault();
+    }
+    
+    // マウスイベント
+    gameArea.addEventListener('mousemove', handleInput);
+    
+    // タッチイベント
+    gameArea.addEventListener('touchstart', handleInput);
+    gameArea.addEventListener('touchmove', handleInput);
 
     function isIntersecting(ball, currentX, currentY, prevX, prevY) {
         const ballRect = ball.getBoundingClientRect();
@@ -184,18 +200,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const oscillator = audioContext.createOscillator();
         const gainNodeForSound = audioContext.createGain();
 
-        // ノイズの代わりに短いサイン波のバーストを使用
         oscillator.type = 'sine';
-        oscillator.frequency.value = 1000; // 高めの周波数で「カッ」に近い音に
+        oscillator.frequency.value = 1000;
         
-        // ゲインを急激に変化させて短い音を表現
         gainNodeForSound.gain.setValueAtTime(1, audioContext.currentTime);
         gainNodeForSound.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.05);
 
         oscillator.connect(gainNodeForSound);
-        gainNodeForSound.connect(gainNode); // メインのゲインノードに接続
+        gainNodeForSound.connect(gainNode);
 
         oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.05); // 0.05秒で停止
+        oscillator.stop(audioContext.currentTime + 0.05);
     }
 });

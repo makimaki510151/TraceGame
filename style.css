@@ -29,6 +29,7 @@ body {
     cursor: default;
     overflow: hidden;
     margin-top: 20px;
+    touch-action: none; /* タッチイベントによるスクロールを無効にする */
 }
 
 .controls {
