@@ -5,8 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const highScoreElement = document.getElementById('high-score');
     const timeElement = document.getElementById('time');
     const volumeSlider = document.getElementById('volume-slider');
-    const touchSound = document.getElementById('touch-sound');
-
+    
     const GAME_DURATION = 15;
     let score = 0;
     let highScore = localStorage.getItem('highScore') || 0;
@@ -14,19 +13,33 @@ document.addEventListener('DOMContentLoaded', () => {
     let isGameRunning = false;
     let timerInterval;
 
+    let audioContext;
+    let gainNode;
+
     // ページロード時に最高スコアと音量を設定
     highScoreElement.textContent = highScore;
     const savedVolume = localStorage.getItem('gameVolume');
     if (savedVolume !== null) {
         volumeSlider.value = savedVolume;
-        touchSound.volume = savedVolume;
-    } else {
-        touchSound.volume = volumeSlider.value;
     }
+
+    // ゲーム開始ボタンの初回クリック時にAudioContextを初期化
+    // 自動再生ポリシーのため、ユーザー操作後に初期化を行う
+    startButton.addEventListener('click', () => {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            gainNode = audioContext.createGain();
+            gainNode.connect(audioContext.destination);
+            gainNode.gain.value = volumeSlider.value;
+        }
+        startGame();
+    });
     
     // 音量スライダーの変更を監視
     volumeSlider.addEventListener('input', () => {
-        touchSound.volume = volumeSlider.value;
+        if (gainNode) {
+            gainNode.gain.value = volumeSlider.value;
+        }
         localStorage.setItem('gameVolume', volumeSlider.value);
     });
 
@@ -159,7 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
         scoreElement.textContent = score;
         ball.remove();
         
-        // 効果音を再生
         playTouchSound();
         
         createBall();
@@ -167,9 +179,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function playTouchSound() {
-        touchSound.currentTime = 0; // 再生位置を最初に戻す
-        touchSound.play();
-    }
+        if (!audioContext) return;
+        
+        const oscillator = audioContext.createOscillator();
+        const gainNodeForSound = audioContext.createGain();
 
-    startButton.addEventListener('click', startGame);
+        // ノイズの代わりに短いサイン波のバーストを使用
+        oscillator.type = 'sine';
+        oscillator.frequency.value = 1000; // 高めの周波数で「カッ」に近い音に
+        
+        // ゲインを急激に変化させて短い音を表現
+        gainNodeForSound.gain.setValueAtTime(1, audioContext.currentTime);
+        gainNodeForSound.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.05);
+
+        oscillator.connect(gainNodeForSound);
+        gainNodeForSound.connect(gainNode); // メインのゲインノードに接続
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.05); // 0.05秒で停止
+    }
 });
