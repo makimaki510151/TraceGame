@@ -16,6 +16,17 @@ document.addEventListener('DOMContentLoaded', () => {
     let audioContext;
     let gainNode;
 
+    // ゲームエリアの高さを設定する関数
+    function setGameAreaHeight() {
+        // 画面全体の高さを取得し、ゲームエリアに適用
+        const viewportHeight = window.innerHeight;
+        gameArea.style.height = `${viewportHeight * 0.8}px`;
+    }
+    
+    // ページロード時とリサイズ時に高さを設定
+    setGameAreaHeight();
+    window.addEventListener('resize', setGameAreaHeight);
+
     highScoreElement.textContent = highScore;
     const savedVolume = localStorage.getItem('gameVolume');
     if (savedVolume !== null) {
@@ -95,7 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
         gameArea.appendChild(ball);
     }
 
-    // マウスイベントとタッチイベントの両方に対応
     let lastMouseX = 0;
     let lastMouseY = 0;
 
@@ -124,14 +134,10 @@ document.addEventListener('DOMContentLoaded', () => {
         lastMouseX = currentMouseX;
         lastMouseY = currentMouseY;
         
-        // タッチ操作の場合、ブラウザのデフォルト動作を抑制
         e.preventDefault();
     }
     
-    // マウスイベント
     gameArea.addEventListener('mousemove', handleInput);
-    
-    // タッチイベント
     gameArea.addEventListener('touchstart', handleInput);
     gameArea.addEventListener('touchmove', handleInput);
 

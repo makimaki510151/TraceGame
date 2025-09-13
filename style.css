@@ -1,5 +1,5 @@
 html, body {
-    height: 100%;
+    height: 100vh; /* ビューポートの高さに固定 */
     margin: 0;
     overflow: hidden; /* スクロールを無効にする */
 }
@@ -29,7 +29,7 @@ body {
     cursor: default;
     overflow: hidden;
     margin-top: 20px;
-    touch-action: none; /* タッチイベントによるスクロールを無効にする */
+    touch-action: none;
 }
 
 .controls {
