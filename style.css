@@ -15,19 +15,26 @@ body {
 }
 
 #game-area {
-    width: 600px;
-    height: 400px;
+    width: 400px;
+    height: 600px;
     border: 3px solid #333;
     position: relative;
     background-color: #fff;
-    cursor: default; /* カーソルをデフォルトに設定 */
+    cursor: default;
     overflow: hidden;
     margin-top: 20px;
 }
 
+.controls {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .ball {
     position: absolute;
-    background-color: #87ceeb; /* 水色 */
+    background-color: #87ceeb;
     border-radius: 50%;
     transition: transform 0.1s ease-out;
 }

@@ -12,10 +12,19 @@
         <p>スコア: <span id="score">0</span></p>
         <p>最高スコア: <span id="high-score">0</span></p>
         <p>残り時間: <span id="time">15</span>秒</p>
+        
+        <div class="controls">
+            <label for="volume">音量:</label>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
+        </div>
+
         <div id="game-area">
             <button id="start-button">ゲームスタート</button>
         </div>
     </div>
+    
+    <audio id="touch-sound" src="sound.mp3"></audio>
+    
     <script src="script.js"></script>
 </body>
 </html>

@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const scoreElement = document.getElementById('score');
     const highScoreElement = document.getElementById('high-score');
     const timeElement = document.getElementById('time');
+    const volumeSlider = document.getElementById('volume-slider');
+    const touchSound = document.getElementById('touch-sound');
 
     const GAME_DURATION = 15;
     let score = 0;
@@ -12,8 +14,21 @@ document.addEventListener('DOMContentLoaded', () => {
     let isGameRunning = false;
     let timerInterval;
 
-    // ページロード時に最高スコアを表示
+    // ページロード時に最高スコアと音量を設定
     highScoreElement.textContent = highScore;
+    const savedVolume = localStorage.getItem('gameVolume');
+    if (savedVolume !== null) {
+        volumeSlider.value = savedVolume;
+        touchSound.volume = savedVolume;
+    } else {
+        touchSound.volume = volumeSlider.value;
+    }
+    
+    // 音量スライダーの変更を監視
+    volumeSlider.addEventListener('input', () => {
+        touchSound.volume = volumeSlider.value;
+        localStorage.setItem('gameVolume', volumeSlider.value);
+    });
 
     function startGame() {
         if (isGameRunning) return;
@@ -39,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInterval(timerInterval);
         isGameRunning = false;
 
-        // 最高スコアを更新
         if (score > highScore) {
             highScore = score;
             localStorage.setItem('highScore', highScore);
@@ -145,8 +159,16 @@ document.addEventListener('DOMContentLoaded', () => {
         scoreElement.textContent = score;
         ball.remove();
         
+        // 効果音を再生
+        playTouchSound();
+        
         createBall();
         createBall();
+    }
+    
+    function playTouchSound() {
+        touchSound.currentTime = 0; // 再生位置を最初に戻す
+        touchSound.play();
     }
 
     startButton.addEventListener('click', startGame);
